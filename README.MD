@@ -82,3 +82,29 @@ Admin Panel Actions:
     Login at /admin/
     Export selected orders to CSV
     Bulk deactivate products
+
+
+
+
+---
+
+## 🐳 Dockerized Setup
+
+Prefer to run the project without local dependency hassles? This project comes fully Dockerized!
+
+### 1. Configure environment variables
+
+Create a `.env` file in the root directory with contents like:
+
+```env
+SECRET_KEY=your_secret_key
+DEBUG=True
+MYSQL_ROOT_PASSWORD=root
+MYSQL_DATABASE=multi_tenant_db
+MYSQL_USER=django_user
+MYSQL_PASSWORD=123456
+
+
+
+Run with Docker Compose:
+  docker compose up --build
