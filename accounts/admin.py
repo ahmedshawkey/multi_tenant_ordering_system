@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import Product
 from .models import Order
+import csv 
+from django.http import HttpResponse
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -22,8 +24,6 @@ class OrderAdmin(admin.ModelAdmin):
     actions = ['export_orders_csv']
 
     def export_orders_csv(self, request, queryset):
-        import csv
-        from django.http import HttpResponse
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=orders.csv'
