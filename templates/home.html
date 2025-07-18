@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        a {
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Welcome, {{ user.username }}</h1>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+    <p><strong>Company:</strong> {{ user.company.name }}</p>
+
+    <nav>
+        <a href="/products-page/">📝 Manage Products</a>
+        <a href="/orders-page/">📦 Manage Orders</a>
+        <a href="/admin/logout/">🔒 Logout</a>
+    </nav>
+</body>
+
+</html>

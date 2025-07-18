@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Order Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+
+        input,
+        select,
+        button {
+            margin: 8px 0;
+            padding: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Create Order</h1>
+
+    {% if user.role == 'viewer' %}
+    <p style="color:red;">You are a viewer and cannot place orders.</p>
+    {% else %}
+    <form method="POST">
+        {% csrf_token %}
+        <label>Product:
+            <select name="product" required>
+                {% for product in products %}
+                <option value="{{ product.id }}">{{ product.name }} — Stock: {{ product.stock }}</option>
+                {% endfor %}
+            </select>
+        </label><br>
+        <label>Quantity: <input type="number" name="quantity" required min="1"></label><br>
+        <button type="submit">Place Order</button>
+    </form>
+    {% endif %}
+
+    <h2>My Orders</h2>
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Shipped At</th>
+            <th>Created By</th>
+            <th>Created At</th>
+        </tr>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.product.name }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.shipped_at|default:"-" }}</td>
+            <td>{{ order.created_by.username }}</td>
+            <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

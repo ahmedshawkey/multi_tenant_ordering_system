@@ -6,6 +6,9 @@ from .serializers import ProductSerializer, OrderSerializer
 from rest_framework import status
 from django.utils.timezone import now
 import logging
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
 
 
 @api_view(['GET', 'POST'])
@@ -157,10 +160,80 @@ def mark_order_shipped(request, pk):
     order.shipped_at = now()
     order.save()
 
-    # 🧠 Log the simulated email
+    # Log the simulated email
     order_logger.info(
         f"Order #{order.id} shipped. Confirmation sent to {order.created_by.email}. "
         f"Product: {order.product.name}, Quantity: {order.quantity}, Date: {now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
 
     return Response({'message': 'Order marked as shipped and confirmation logged.'}, status=status.HTTP_200_OK)
+
+@login_required
+def index(request):
+    user = request.user
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price = request.POST.get('price')
+        stock = request.POST.get('stock')
+
+        if name and price and stock:
+            Product.objects.create(
+                name=name,
+                company=user.company,
+                price=price,
+                stock=stock,
+                created_by=user,
+                created_at=now(),
+                is_active=True
+            )
+
+    products = Product.objects.filter(company=user.company, is_active=True)
+
+    return render(request, 'index.html', {
+        'products': products,
+        'user': user
+    })
+
+@login_required
+def order_page(request):
+    user = request.user
+    products = Product.objects.filter(company=user.company, is_active=True)
+    orders = Order.objects.filter(company=user.company)
+
+    if request.method == 'POST' and not user.is_viewer():
+        product_id = request.POST.get('product')
+        quantity = request.POST.get('quantity')
+
+        try:
+            product = products.get(id=product_id)
+        except Product.DoesNotExist:
+            product = None
+
+        if product and quantity.isdigit():
+            quantity = int(quantity)
+            if product.stock >= quantity:
+                product.stock -= quantity
+                product.save()
+
+                Order.objects.create(
+                    product=product,
+                    quantity=quantity,
+                    status='pending',
+                    shipped_at=None,
+                    company=user.company,
+                    created_by=user,
+                    created_at=now()
+                )
+
+    return render(request, 'order_page.html', {
+        'user': user,
+        'products': products,
+        'orders': orders
+    })
+
+@login_required
+def home(request):
+    return render(request, 'home.html', {
+        'user': request.user,
+    })

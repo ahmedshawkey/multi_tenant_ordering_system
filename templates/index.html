@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Product Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+
+        input,
+        button {
+            margin-top: 10px;
+            padding: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Add Product</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Name: <input type="text" name="name" required></label><br>
+        <label>Price: <input type="number" name="price" step="0.01" required></label><br>
+        <label>Stock: <input type="number" name="stock" required></label><br>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <h2>My Products</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Created By</th>
+            <th>Created At</th>
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.stock }}</td>
+            <td>{{ product.created_by.username }}</td>
+            <td>{{ product.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
