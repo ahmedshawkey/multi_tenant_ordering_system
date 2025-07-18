@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from .models import Product, Order
 from .serializers import ProductSerializer, OrderSerializer
 from rest_framework import status
+from django.utils.timezone import now
+import logging
 
 
 @api_view(['GET', 'POST'])
@@ -112,3 +114,53 @@ def get_order_detail(request, pk):
 
     serializer = OrderSerializer(order)
     return Response(serializer.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def edit_order(request, pk):
+    user = request.user
+
+    try:
+        order = Order.objects.get(pk=pk, company=user.company)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Restrict operators to same-day orders
+    if user.role == 'operator' and order.created_at.date() != now().date():
+        return Response({'error': 'Operators can only edit today’s orders.'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = OrderSerializer(order, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+order_logger = logging.getLogger('order_email')
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_order_shipped(request, pk):
+    user = request.user
+
+    try:
+        order = Order.objects.get(pk=pk, company=user.company)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if order.status != 'pending':
+        return Response({'error': 'Only pending orders can be marked as shipped.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    order.status = 'success'
+    order.shipped_at = now()
+    order.save()
+
+    # 🧠 Log the simulated email
+    order_logger.info(
+        f"Order #{order.id} shipped. Confirmation sent to {order.created_by.email}. "
+        f"Product: {order.product.name}, Quantity: {order.quantity}, Date: {now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
+    return Response({'message': 'Order marked as shipped and confirmation logged.'}, status=status.HTTP_200_OK)

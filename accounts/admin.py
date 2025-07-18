@@ -3,6 +3,13 @@ from .models import Product
 from .models import Order
 import csv 
 from django.http import HttpResponse
+from django.contrib import admin
+from .models import User
+
+
+admin.site.register(User)
+
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):

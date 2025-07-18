@@ -151,3 +151,22 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'order_email_log': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'order_emails.log',  # Creates file in project root
+        },
+    },
+    'loggers': {
+        'order_email': {
+            'handlers': ['order_email_log'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
